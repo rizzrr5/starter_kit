@@ -5,9 +5,7 @@ import App from './components/App';
 import * as serviceWorker from './serviceWorker';
 import { createRoot } from 'react-dom/client';
 const root = document.getElementById('root');
-//hello
-//asdas
-//sadas
+
 // Import createRoot from "react-dom/client" instead of directly from "react-dom"
 
 // Use createRoot to render the App component

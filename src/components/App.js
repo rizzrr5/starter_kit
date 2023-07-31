@@ -4,9 +4,27 @@ import './App.css';
 
 class App extends Component {
 
+  constructor(props){
+    super(props);
+    this.state={
+      buffer:null
+    };
+  }
   captureFile =(event)=>{
     event.preventDefault()
-    console.log('file captured')
+    const file=event.target.files[0]
+    const reader= new window.FileReader()
+    reader.readAsArrayBuffer(file)
+    reader.onloadend=()=>{
+      const bufferView = new Uint8Array(reader.result);
+      this.setState({buffer:bufferView})
+    }
+
+
+  }
+  onSubmit=(event)=>{
+    event.preventDefault()
+    console.log('submit form.')
   }
   render() {
     return (
@@ -33,7 +51,7 @@ class App extends Component {
                   <img src={logo} className="App-logo" alt="logo" />
                 </a>
              <h2>File Submission</h2>
-             <form>
+             <form onSubmit={this.onSubmit} >
 
                <input type='file' onChange={this.captureFile} />
                <input type='submit'/>

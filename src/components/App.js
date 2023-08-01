@@ -3,6 +3,7 @@ import logo from '../logo.png';
 import './App.css';
 // import ipfsClient from 'ipfs-http-client';
 import { create } from 'ipfs-http-client';
+import Web3 from 'web3';
 // const ipfsClient=require('ipfs-http-client')
 // const ipfsClient=create();
 const projectId = '2TMLGJoTk4XnSGFp8vouWejROB4';
@@ -16,12 +17,29 @@ const ipfs = create({ host: 'ipfs.infura.io', port: '5001', protocol: 'https',
 
 class App extends Component {
 
+  async UNSAFE_componentWillMount(){
+    await this.loadWeb3()
+  }
+
   constructor(props){
     super(props);
     this.state={
       buffer:null,
       result:null
     };
+  }
+
+  async loadWeb3(){
+    if(window.ethereum){
+      window.web3=new Web3(window.ethereum)
+      // await window.ethereum.enable()
+       await window.eth_requestAccounts
+
+    }if(window.web3){
+      window.web3=new Web3(window.web3.currentProvider)
+    }else{
+      window.alert('please use')
+    }
   }
   captureFile =(event)=>{
     event.preventDefault()

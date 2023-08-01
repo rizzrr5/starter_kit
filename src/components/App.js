@@ -1,6 +1,18 @@
 import React, { Component } from 'react';
 import logo from '../logo.png';
 import './App.css';
+// import ipfsClient from 'ipfs-http-client';
+import { create } from 'ipfs-http-client';
+// const ipfsClient=require('ipfs-http-client')
+// const ipfsClient=create();
+const projectId = '2TMLGJoTk4XnSGFp8vouWejROB4';
+const projectSecret = '56bd663ece086b2320374a721e4bc015';
+const auth =
+    'Basic ' + btoa(projectId + ":" + projectSecret)
+const ipfs = create({ host: 'ipfs.infura.io', port: '5001', protocol: 'https',
+  headers: {
+        authorization: auth,
+    }, })
 
 class App extends Component {
 
@@ -24,7 +36,15 @@ class App extends Component {
   }
   onSubmit=(event)=>{
     event.preventDefault()
-    console.log('submit form.')
+    // console.log('submit form.')
+    ipfs.add( this.state.buffer,(error,result)=>{
+      console.log(result)
+      // if(error){
+      //   console.log('hey baby')
+      //   return
+      // }
+
+    })
   }
   render() {
     return (

@@ -19,7 +19,8 @@ class App extends Component {
   constructor(props){
     super(props);
     this.state={
-      buffer:null
+      buffer:null,
+      result:null
     };
   }
   captureFile =(event)=>{
@@ -34,15 +35,14 @@ class App extends Component {
 
 
   }
+  //QmbBr4TjPrT7NiM7PLwxpp9waaem2owmrR1njjM71Dcqep
   onSubmit=(event)=>{
     event.preventDefault()
     // console.log('submit form.')
-    ipfs.add( this.state.buffer,(error,result)=>{
-      console.log(result)
-      // if(error){
-      //   console.log('hey baby')
-      //   return
-      // }
+    ipfs.add( this.state.buffer).then((result)=>{
+      console.log("result",result)
+      this.setState({result:result})
+   
 
     })
   }
@@ -76,7 +76,13 @@ class App extends Component {
                <input type='file' onChange={this.captureFile} />
                <input type='submit'/>
              </form>
-              
+              {this.state.result && (
+          <div>
+            <h3>IPFS Result</h3>
+            {this.state.result.path && <p>File path: {this.state.result.path}</p>}
+            {this.state.result.cid && <p>CID: {this.state.result.cid.toString()}</p>}
+          </div>
+        )}
                
               </div>
             </main>

@@ -4,6 +4,7 @@ import './App.css';
 // import ipfsClient from 'ipfs-http-client';
 import { create } from 'ipfs-http-client';
 import Web3 from 'web3';
+import Iprm from '../abis/Iprm.json'
 // const ipfsClient=require('ipfs-http-client')
 // const ipfsClient=create();
 const projectId = '2TMLGJoTk4XnSGFp8vouWejROB4';
@@ -28,6 +29,40 @@ class App extends Component {
     this.setState({account:accounts[0]},()=>{
       console.log(this.state.account)
     })
+    const networkid=await web3.eth.net.getId()
+    console.log(networkid)
+    const networkData=await Iprm.networks[networkid]
+    if(networkData){
+      const abi=Iprm.abi
+      const address=networkData.address
+      console.log(address)
+      const contract=new web3.eth.Contract(abi,address)
+      this.setState({contract:contract},()=>{
+      //   console.log(this.state.contract)
+      //   console.log(contract.methods.get().call())
+        // const hash=contract.methods.get().call()
+        // console.log(hash  )
+        // this.setState({result:hash}) 
+        // console.log()
+   
+       
+      })  
+      // await contract.methods.set("abc123").send({ from: this.state.account });
+      const hash = await contract.methods.get().call();
+    // console.log('hashs',hash);
+    this.setState({result:hash},()=>{
+      // console.log(this.state.result)
+    }) 
+    
+        // const { contract } = this.state;
+ // this.setState({contract:contract},()=>{
+
+
+     
+    }
+    else{
+      window.alert('wrong network')
+    }
    
     
   }
@@ -36,6 +71,7 @@ class App extends Component {
     this.state={
       account:'',
       buffer:null,
+      contract:null,
       result:null
     };
   }
@@ -69,12 +105,18 @@ class App extends Component {
     event.preventDefault()
     // console.log('submit form.')
     ipfs.add( this.state.buffer).then((result)=>{
-      this.setState({ result }, () => {
+      console.log(result)
+      const hash=result.path
+      
+     
+   
+      this.state.contract.methods.set(this.state.result).send({from:this.state.account}).then((r)=>{
+        this.setState({ result :hash}, () => {
     console.log("the final result is", this.state.result);
+
     // Any code that relies on the updated state can be placed here.
   });
-   
-
+      })
     })
   }
   render() {
@@ -113,9 +155,8 @@ class App extends Component {
              </form>
               {this.state.result && (
           <div>
-            <h3>IPFS Result</h3>
-            {this.state.result.path && <p>File path: {this.state.result.path}</p>}
-            {this.state.result.cid && <p>CID: {this.state.result.cid.toString()}</p>}
+           
+            
           </div>
         )}
                

@@ -17,13 +17,24 @@ const ipfs = create({ host: 'ipfs.infura.io', port: '5001', protocol: 'https',
 
 class App extends Component {
 
-  async UNSAFE_componentWillMount(){
+  async componentDidMount(){
     await this.loadWeb3()
+    await this.loadBlockchainData()
   }
 
+  async loadBlockchainData(){
+    const web3=window.web3
+    const accounts=await web3.eth.getAccounts()
+    this.setState({account:accounts[0]},()=>{
+      console.log(this.state.account)
+    })
+   
+    
+  }
   constructor(props){
     super(props);
     this.state={
+      account:'',
       buffer:null,
       result:null
     };
@@ -58,8 +69,10 @@ class App extends Component {
     event.preventDefault()
     // console.log('submit form.')
     ipfs.add( this.state.buffer).then((result)=>{
-      console.log("result",result)
-      this.setState({result:result})
+      this.setState({ result }, () => {
+    console.log("the final result is", this.state.result);
+    // Any code that relies on the updated state can be placed here.
+  });
    
 
     })
@@ -70,12 +83,16 @@ class App extends Component {
         <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
           <a
             className="navbar-brand col-sm-3 col-md-2 mr-0"
-            href="http://www.dappuniversity.com/bootcamp"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Dapp University
+            IPRM
           </a>
+          <ul className="navbar-nav px-3">
+           <li className="nav-item text-nowrap d-none d-sm-block">
+             <small className="text-white">{this.state.account}</small>
+           </li>
+          </ul>
         </nav>
         <div className="container-fluid mt-5">
           <div className="row">

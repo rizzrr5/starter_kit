@@ -37,16 +37,20 @@ class App extends Component {
       const address=networkData.address
       console.log(address)
       const contract=new web3.eth.Contract(abi,address)
-      this.setState({contract:contract},()=>{
+      this.setState({contract:contract},async ()=>{
       //   console.log(this.state.contract)
       //   console.log(contract.methods.get().call())
         // const hash=contract.methods.get().call()
         // console.log(hash  )
         // this.setState({result:hash}) 
         // console.log()
+  
    
        
       })  
+    //      const transactionHash = '0x7097b1060e307dda0389c11022635550456b97c138b51f81519e54179a483630';
+    //    const transaction = await web3.eth.getTransaction(transactionHash);
+    // console.log('Transaction details:', transaction);
       // await contract.methods.set("abc123").send({ from: this.state.account });
       const hash = await contract.methods.get().call();
     // console.log('hashs',hash);
@@ -72,7 +76,8 @@ class App extends Component {
       account:'',
       buffer:null,
       contract:null,
-      result:null
+       result: localStorage.getItem("ipfsHash") || null,
+       transactionHash:localStorage.getItem("transactionHash") || null, // Load from localStorage
     };
   }
 
@@ -102,21 +107,36 @@ class App extends Component {
   }
   //QmbBr4TjPrT7NiM7PLwxpp9waaem2owmrR1njjM71Dcqep
   onSubmit=(event)=>{
-    event.preventDefault()
+      event.preventDefault()
+      const web3=window.web3
     // console.log('submit form.')
-    ipfs.add( this.state.buffer).then((result)=>{
-      console.log(result)
-      const hash=result.path
-      
-     
-   
-      this.state.contract.methods.set(this.state.result).send({from:this.state.account}).then((r)=>{
-        this.setState({ result :hash}, () => {
-    console.log("the final result is", this.state.result);
+      ipfs.add( this.state.buffer).then((result)=>{
+        console.log(result)
+        const hash=result.path
+        this.state.contract.methods.set(hash).send({from:this.state.account}).on("transactionHash", (txHash) => {
+          console.log("Transaction Hash:", txHash);
+          // Transaction hash is available here, you can use it as needed
+          this.setState({ transactionHash: txHash });
+          localStorage.setItem("transactionHash", txHash);
+        }).then((r)=>{
+          this.setState({ result :hash}, () => {
+            console.log("the final result is", this.state.result);
+            localStorage.setItem("ipfsHash", this.state.result);
+            const transactionHash1 = this.state.transactionHash
+            web3.eth.getTransaction(transactionHash1).then((transaction)=>{
+                const blockNumber = transaction.blockNumber;
+                web3.eth.getBlock(blockNumber).then((block) => {
+                  console.log(blockNumber)
+                  console.log(block)
+                const timestamp = block.timestamp;
+                console.log('Timestamp:', timestamp);
+              });
 
+              console.log('Transaction details:', transaction); 
+            })
     // Any code that relies on the updated state can be placed here.
-  });
-      })
+    });
+    })   
     })
   }
   render() {
@@ -155,7 +175,7 @@ class App extends Component {
              </form>
               {this.state.result && (
           <div>
-           
+           <h2>{this.state.result}</h2>
             
           </div>
         )}

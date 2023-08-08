@@ -21,6 +21,8 @@ class App extends Component {
   async componentDidMount(){
     await this.loadWeb3()
     await this.loadBlockchainData()
+
+
   }
 
   async loadBlockchainData(){
@@ -30,42 +32,19 @@ class App extends Component {
       console.log(this.state.account)
     })
     const networkid=await web3.eth.net.getId()
-    console.log(networkid)
+    // console.log(networkid)
     const networkData=await Iprm.networks[networkid]
     if(networkData){
       const abi=Iprm.abi
       const address=networkData.address
-      console.log(address)
+      // console.log(address)
       const contract=new web3.eth.Contract(abi,address)
       this.setState({contract:contract},async ()=>{
-      //   console.log(this.state.contract)
-      //   console.log(contract.methods.get().call())
-        // const hash=contract.methods.get().call()
-        // console.log(hash  )
-        // this.setState({result:hash}) 
-        // console.log()
-  
-   
-       
       })  
-    //      const transactionHash = '0x7097b1060e307dda0389c11022635550456b97c138b51f81519e54179a483630';
-    //    const transaction = await web3.eth.getTransaction(transactionHash);
-    // console.log('Transaction details:', transaction);
-      // await contract.methods.set("abc123").send({ from: this.state.account });
       const hash = await contract.methods.get().call();
     // console.log('hashs',hash);
-    const name=await contract.methods.getName().call();
-    console.log(name)
-
     this.setState({result:hash},()=>{
-      // console.log(this.state.result)
-    }) 
-    
-        // const { contract } = this.state;
- // this.setState({contract:contract},()=>{
-
-
-     
+    })   
     }
     else{
       window.alert('wrong network')
@@ -109,22 +88,31 @@ class App extends Component {
 
 
   }
+
   //QmbBr4TjPrT7NiM7PLwxpp9waaem2owmrR1njjM71Dcqep
   onSubmit=(event)=>{
       event.preventDefault()
       const web3=window.web3
     // console.log('submit form.')
       ipfs.add( this.state.buffer).then((result)=>{
-        console.log(result)
+        // console.log(result)
         
         const hash=result.path
-       
+
 
         this.state.contract.methods.set(hash).send({from:this.state.account}).on("transactionHash", (txHash) => {
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
           this.setState({ transactionHash: txHash });
           localStorage.setItem("transactionHash", txHash);
+            this.state.contract.events.DocumentSubmitted({}, (error, event) => {
+                    if (!error) {
+                        console.log('Document submitted event:', event.returnValues.sender, event.returnValues.documentHash, event.returnValues.name,event.returnValues.timestamp);
+                        // You can update your UI or take any action based on the event here
+                    } else {
+                        console.log("Error in DocumentSubmitted event:", error);
+                    }
+                });
         }).then((r)=>{
           this.setState({ result :hash}, () => {
             console.log("the final result is", this.state.result);
@@ -132,22 +120,35 @@ class App extends Component {
             const transactionHash1 = this.state.transactionHash
             web3.eth.getTransaction(transactionHash1).then((transaction)=>{
                 const blockNumber = transaction.blockNumber;
+                const input=transaction.input;
+                 console.log('Transaction Data:', input);
                 web3.eth.getBlock(blockNumber).then((block) => {
                   console.log("blocknumber:",blockNumber)
-                  console.log(block)
+                  console.log("block",block)
                 const timestamp = block.timestamp;
                 console.log('Timestamp:', timestamp);
+                const date = new Date(timestamp * 1000); // Multiply by 1000 to convert seconds to milliseconds
+              console.log(date.toUTCString());
               });
 
               console.log('Transaction details:', transaction); 
-            })
+            }).catch((error) => {
+    console.log("Error sending2 transaction:", error);
+  }); 
     // Any code that relies on the updated state can be placed here.
     });
-    })   
+
+    }).catch((error) => {
+    console.log("Error sending transaction:", error);
+  }); 
     })
 
   }
   render() {
+     const infuraBaseUrl = 'https://intellectualpropertyrights.infura-ipfs.io/ipfs/';
+    const dynamicLink = infuraBaseUrl + this.state.result;
+    
+
     return (
       <div>
         <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
@@ -182,10 +183,13 @@ class App extends Component {
                <input type='submit'/>
              </form>
               {this.state.result && (
-          <div>
-           <h2>{this.state.result}</h2>
-            
-          </div>
+          <div className="App">
+        <h1>IPFS Content Viewer</h1>
+        <button onClick={() => window.open(dynamicLink, '_blank')}>
+          View IPFS Content
+        </button>
+      </div>
+
         )}
                
               </div>

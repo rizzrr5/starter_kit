@@ -26,7 +26,7 @@ class App extends Component {
   async loadBlockchainData(){
     const web3=window.web3
     const accounts=await web3.eth.getAccounts()
-    this.setState({account:accounts[0]},()=>{
+    this.setState({account:accounts[1]},()=>{
       console.log(this.state.account)
     })
     const networkid=await web3.eth.net.getId()
@@ -54,6 +54,9 @@ class App extends Component {
       // await contract.methods.set("abc123").send({ from: this.state.account });
       const hash = await contract.methods.get().call();
     // console.log('hashs',hash);
+    const name=await contract.methods.getName().call();
+    console.log(name)
+
     this.setState({result:hash},()=>{
       // console.log(this.state.result)
     }) 
@@ -74,6 +77,7 @@ class App extends Component {
     super(props);
     this.state={
       account:'',
+      url:'https://intellectualpropertyrights.infura-ipfs.io/ipfs/',
       buffer:null,
       contract:null,
        result: localStorage.getItem("ipfsHash") || null,
@@ -112,7 +116,10 @@ class App extends Component {
     // console.log('submit form.')
       ipfs.add( this.state.buffer).then((result)=>{
         console.log(result)
+        
         const hash=result.path
+       
+
         this.state.contract.methods.set(hash).send({from:this.state.account}).on("transactionHash", (txHash) => {
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
@@ -126,7 +133,7 @@ class App extends Component {
             web3.eth.getTransaction(transactionHash1).then((transaction)=>{
                 const blockNumber = transaction.blockNumber;
                 web3.eth.getBlock(blockNumber).then((block) => {
-                  console.log(blockNumber)
+                  console.log("blocknumber:",blockNumber)
                   console.log(block)
                 const timestamp = block.timestamp;
                 console.log('Timestamp:', timestamp);
@@ -138,6 +145,7 @@ class App extends Component {
     });
     })   
     })
+
   }
   render() {
     return (

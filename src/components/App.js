@@ -5,6 +5,7 @@ import './App.css';
 import { create } from 'ipfs-http-client';
 import Web3 from 'web3';
 import Iprm from '../abis/Iprm.json'
+import User from '../abis/User.json'
 // const ipfsClient=require('ipfs-http-client')
 // const ipfsClient=create();
 const projectId = '2TMLGJoTk4XnSGFp8vouWejROB4';
@@ -28,28 +29,43 @@ class App extends Component {
   async loadBlockchainData(){
     const web3=window.web3
     const accounts=await web3.eth.getAccounts()
-    this.setState({account:accounts[1]},()=>{
-      console.log(this.state.account)
+    this.setState({account:accounts[0]},()=>{
+      console.log("acc",this.state.account)
     })
     const networkid=await web3.eth.net.getId()
     // console.log(networkid)
     const networkData=await Iprm.networks[networkid]
-    if(networkData){
+    if(networkData){ 
       const abi=Iprm.abi
       const address=networkData.address
       // console.log(address)
       const contract=new web3.eth.Contract(abi,address)
       this.setState({contract:contract},async ()=>{
       })  
-      const hash = await contract.methods.get().call();
+
+      // const hash = await contract.methods.get().call();
     // console.log('hashs',hash);
-    this.setState({result:hash},()=>{
-    })   
+    // this.setState({result:hash},()=>{
+    // })   
     }
+
     else{
       window.alert('wrong network')
     }
-   
+    const networkData1=await User.networks[networkid]
+    if(networkData1){ 
+      const abi1=Iprm.abi
+      const address1=networkData.address
+      // console.log(address)
+      const contract1=new web3.eth.Contract(abi1,address1)
+      this.setState({contract1:contract1},async ()=>{
+      })  
+
+    //   const hash = await contract1.methods.get().call();
+    // // console.log('hashs',hash);
+    // this.setState({result:hash},()=>{
+    // })   
+    }
     
   }
   constructor(props){
@@ -59,6 +75,7 @@ class App extends Component {
       url:'https://intellectualpropertyrights.infura-ipfs.io/ipfs/',
       buffer:null,
       contract:null,
+      contract1:null,
        result: localStorage.getItem("ipfsHash") || null,
        transactionHash:localStorage.getItem("transactionHash") || null, // Load from localStorage
     };
@@ -100,14 +117,14 @@ class App extends Component {
         const hash=result.path
 
 
-        this.state.contract.methods.set(hash).send({from:this.state.account}).on("transactionHash", (txHash) => {
+        this.state.contract.methods.submit(hash,'sads','0x73737fd55D89c851fd5496c8Ff295Ae1822b1E94').send({from:this.state.account}).on("transactionHash", (txHash) => {
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
           this.setState({ transactionHash: txHash });
           localStorage.setItem("transactionHash", txHash);
             this.state.contract.events.DocumentSubmitted({}, (error, event) => {
                     if (!error) {
-                        console.log('Document submitted event:', event.returnValues.sender, event.returnValues.documentHash, event.returnValues.name,event.returnValues.timestamp);
+                        console.log('Document submitted event:', event.returnValues.sender, event.returnValues.ipfsHash, event.returnValues.courseName,event.returnValues.timestamp);
                         // You can update your UI or take any action based on the event here
                     } else {
                         console.log("Error in DocumentSubmitted event:", error);

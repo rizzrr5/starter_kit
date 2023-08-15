@@ -1,24 +1,26 @@
+pragma solidity 0.5.0;
 
-Contract Submit{
-
-	struct work{
-
-		  string ipfsHash;
+contract Submit {
+    struct Work {
+        string ipfsHash;
         address userAddress;
         address moduleLeaderAddress;
         uint256 timestamp;
         string courseName;
-	} 
-  mapping(string => Submission) public submissions;
+    }
+
+    // Use bytes32 as the key type for the mapping
+    mapping(bytes32 => Work) public submissions;
 
     // Other contract code...
 
-    function submit(string memory _ipfsHash, string memory _courseName) public {
-    
-        submissions[_ipfsHash] = Submission({
+    function submit(string memory _ipfsHash, string memory _courseName, address _module_leader) public {
+        bytes32 hash = keccak256(bytes(_ipfsHash)); // Convert string to bytes32 hash
+
+        submissions[hash] = Work({
             ipfsHash: _ipfsHash,
             userAddress: msg.sender,
-            moduleLeaderAddress: // Set module leader address here,
+            moduleLeaderAddress: _module_leader,
             timestamp: block.timestamp,
             courseName: _courseName
         });
@@ -28,5 +30,4 @@ Contract Submit{
     }
 
     event DocumentSubmitted(address indexed sender, string ipfsHash, string courseName, uint256 timestamp);
-
 }

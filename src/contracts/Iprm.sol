@@ -2,24 +2,33 @@ pragma solidity 0.5.0;
 
 contract Iprm{
 	//smart contract goes here
-	string articleHash;
-	string name="hello";
-	  event DocumentSubmitted(address indexed sender, string documentHash, string name,uint256 timestamp);
+	 struct Work {
+        string ipfsHash;
+        address userAddress;
+        address moduleLeaderAddress;
+        uint256 timestamp;
+        string courseName;
+    }
+	 
 
 
-	function set(string memory hash) public {
-	articleHash=hash;
-	name="hello";
-	emit DocumentSubmitted(msg.sender, hash,name, block.timestamp);
+	  mapping(bytes32 => Work) public submissions;
 
-	}
+ function submit(string memory _ipfsHash, string memory _courseName, address _module_leader) public {
+        bytes32 hash = keccak256(bytes(_ipfsHash)); // Convert string to bytes32 hash
 
-	function get() public view returns(string memory) {
-	return articleHash;
-	}
-	function getName() public view returns(string memory){
-	return name;
-	}
+        submissions[hash] = Work({
+            ipfsHash: _ipfsHash,
+            userAddress: msg.sender,
+            moduleLeaderAddress: _module_leader,
+            timestamp: block.timestamp,
+            courseName: _courseName
+        });
 
+        // Emit an event for the submission
+        emit DocumentSubmitted(msg.sender, _ipfsHash, _courseName, block.timestamp);
+    }
+
+    event DocumentSubmitted(address indexed sender, string ipfsHash, string courseName, uint256 timestamp);
 
 }

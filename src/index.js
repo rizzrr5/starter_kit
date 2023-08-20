@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.css'
 import App from './components/App';
 import Login from './components/Login';
 import Admin from './components/Admin';
+import Super from './components/Super';
 import * as serviceWorker from './serviceWorker';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -37,6 +38,7 @@ createRoot(root).render(
     <Routes>
      <Route path="/app" element={<App />} />
      <Route path="/admin" element={<Admin />} />
+     <Route path="/super" element={<Super />} />
       <Route path="/" element={<Login />} />
     </Routes>
   </Router>,

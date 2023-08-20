@@ -45,37 +45,66 @@ const LoginForm = () => {
       setContract(contract);
     }
   }
+   const fetchUserRole = async () => {
+    
+    if (!contract) {
+      return;
+    }
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    const web3 = window.web3;
+    try {
+      const allUsers = await contract.methods.getAllUsers().call();
+      console.log("Users",allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+ 
+    if (!contract) {
+      return;
+    }
 
-    if (username === 'admin' && password === 'admin') {
-      setError('');
-      history('/Admin');
-    } else if (contract) {
-     
-      contract.methods.getUser(username, password, account)
-        .call()
-        .then(result => {
-          console.log(result);
-            console.log(username);
-            console.log(password);
-            console.log(account);
-          if (result) {
-            
-            history('/App');
-          } else {
-            setError('Invalid username or password');
-          }
-        })
-        .catch(error => {
-          console.error(error);
-          setError('An error occurred');
-        });
+    try {
+      const userRole = await contract.methods.getRole(account).call();
+      console.log("User Role:", userRole);
+
+      // Now navigate based on user role
+      if (userRole === 'Student') {
+        // Navigate to Student page
+       history('/App');
+      } else {
+        // Navigate to Admin page
+        history('/Super');
+      }
+    } catch (error) {
+      console.error("Error fetching user role:", error);
+    }
+  };
+
+  const handleLogin = async (e) => {
+  e.preventDefault();
+  const web3 = window.web3;
+
+  if (username === 'admin' && password === 'admin') {
+    setError('');
+    history('/Admin');
+  } else if (contract) {
+    try {
+      const result = await contract.methods.getUser(username, password, account).call();
+      console.log(result);
+      console.log(username);
+      console.log(password);
+      console.log(account);
+      
+      if (result) {
+        await fetchUserRole(); // Wait for fetching user role
+      } else {
+        setError('Invalid username or password');
+      }
+    } catch (error) {
+      console.error(error);
+      setError('An error occurred');
     }
   }
-
+}
   return (
     <div>
       <h2>Login</h2>

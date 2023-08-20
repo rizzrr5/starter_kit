@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { withRouter } from 'react-router-dom';
+import { withRouter,usehistory } from 'react-router-dom';
 import Web3 from 'web3';
 import User from '../abis/User.json'
 class AdminRegistrationForm extends Component {
@@ -10,9 +10,14 @@ class AdminRegistrationForm extends Component {
       contract:null,
       username: ' ',
       password: '',
-      universityId: ''
+      universityId: '',
+      account:null,
+      role:'Student',
+      allUsers: []
     };
+    // const history=usehistory();
   }
+
    
 async componentDidMount(){
     await this.loadWeb3()
@@ -76,24 +81,49 @@ async componentDidMount(){
         const _name=this.state.name;
         const _username=this.state.username;
         const _password=this.state.password;
-        const _uid=this.state.universityId
+        const _uid=this.state.universityId;
+        console.log("the role is",this.state.role)
+        const _role=this.state.role;
         console.log("user address",newUserAddress)
         console.log("privateKey",newUserPrivateKey)
-        web3.eth.sendTransaction({from: this.state.account, to: newUserAddress, value: web3.utils.toWei('1', "ether")})
-        this.state.contract.methods.addUser(_name,_password,newUserAddress,_uid).send({from:this.state.account}).on("transactionHash", (txHash) => {
+       try{
+         await web3.eth.sendTransaction({from: this.state.account, to: newUserAddress, value: web3.utils.toWei('1', "ether")})
+        this.state.contract.methods.addUser(_name,_password,newUserAddress,_uid,_role).send({from:this.state.account}).on("transactionHash", (txHash) => {
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
           this.setState({ transactionHash: txHash });
         }).catch((error) => {
     console.log("Error sending transaction:", error);
   }); 
+      }catch(error){
+        console.log('Error sending or processing transaction:', error);
+  if (error.message.includes('revert')) {
+    console.log('Transaction was rejected or reverted.');
+    // You can handle the rejection/revert here as needed
+  }
+      }
 
     // After successful registration, navigate to a new page or display a success message
     // Replace with the desired URL
   }
+  fetchAllUsers = async () => {
+    const { contract } = this.state;
+
+    if (!contract) {
+      return;
+    }
+
+    try {
+      const allUsers = await contract.methods.getAllUsers().call();
+      this.setState({ allUsers });
+      console.log("Users",allUsers);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
 
   render() {
-    const { name, username, password, universityId } = this.state;
+    const { name, username, password, universityId,role } = this.state;
 
     return (
       <div className="container mt-5">
@@ -115,8 +145,44 @@ async componentDidMount(){
             <label htmlFor="universityId" className="form-label">University ID</label>
             <input type="number" className="form-control" id="universityId" value={universityId} onChange={(e) => this.setState({ universityId: e.target.value })} required />
           </div>
+            <div className="mb-3">
+            <label htmlFor="role" className="form-label">
+              Role
+            </label>
+            <select
+              className="form-select"
+              id="role"
+              value={role}
+              onChange={(e) => this.setState({ role: e.target.value })}
+              required
+            >
+              <option value="" disabled>
+                Select Role
+              </option>
+              <option value="Student">Student</option>
+              <option value="Staff">Staff</option>
+            </select>
+          </div>
           <button type="submit" className="btn btn-primary">Register</button>
         </form>
+     <div className="container mt-5">
+        {/* Form... */}
+        <button type="button" className="btn btn-secondary" onClick={this.fetchAllUsers}>Fetch All Users</button>
+
+        {/* Display generated user address */}
+        {/* Display fetched user data */}
+        <div className="mt-3">
+          <h3>All Users</h3>
+          <ul>
+            {this.state.allUsers.map((user, index) => (
+              <li key={index}>
+                Name: {user.name}, Address: {user.ethAddress}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+      
       </div>
     );
   }

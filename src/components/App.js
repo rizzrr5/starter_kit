@@ -161,6 +161,22 @@ class App extends Component {
     })
 
   }
+   fetchUserSubmissions = async () => {
+    const { contract } = this.state;
+
+    if (!contract) {
+      return;
+    }
+
+    try {
+      const userSubmissions = await contract.methods.getUserSubmissions().call({ from: this.state.account });
+      console.log("User Submissions:", userSubmissions);
+      this.setState({ userSubmissions });
+    } catch (error) {
+      console.error("Error fetching user submissions:", error);
+    }
+  };
+
   render() {
      const infuraBaseUrl = 'https://intellectualpropertyrights.infura-ipfs.io/ipfs/';
     const dynamicLink = infuraBaseUrl + this.state.result;
@@ -199,12 +215,31 @@ class App extends Component {
                <input type='file' onChange={this.captureFile} />
                <input type='submit'/>
              </form>
+
               {this.state.result && (
           <div className="App">
         <h1>IPFS Content Viewer</h1>
         <button onClick={() => window.open(dynamicLink, '_blank')}>
           View IPFS Content
         </button>
+          <button type="button" className="btn btn-primary" onClick={this.fetchUserSubmissions}>
+                  Fetch My Submissions
+                </button>
+                {this.state.userSubmissions !=null && (
+                  <div>
+                    <h3>My Submissions:</h3>
+                    <ul>
+                      {this.state.userSubmissions.map((submissionHash, index) => (
+                        <li key={index}>
+                          <a href={this.state.url + submissionHash} target="_blank" rel="noopener noreferrer">
+                            {submissionHash}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
       </div>
 
         )}

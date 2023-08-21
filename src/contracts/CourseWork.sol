@@ -36,7 +36,7 @@ contract CourseWork {
         courseWorkList[_courseName][_courseworkId] = newCoursework;
         courseWorkKeys[_courseName].push(_courseworkId);
 
-        emit DocumentSubmitted(msg.sender, _courseworkId, _courseName, _timestamp);
+        emit DocumentSubmitted(msg.sender, _courseworkId, _courseName, block.timestamp);
     }
 
     function getCourseworkList(string memory _courseName) public view returns (Coursework[] memory) {

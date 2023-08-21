@@ -10,6 +10,7 @@ contract User {
         address ethAddress;
         uint256 universityId;
         bool isActive;
+        string courseName;
         string role;
     }
     address[] public userAddresses;
@@ -21,6 +22,7 @@ contract User {
         string memory _password,
         address _ethAddress,
         uint256 _universityId,
+        string memory _courseName,
         string memory _role
     ) public {
         require(users[_ethAddress].ethAddress == address(0), "User already registered");
@@ -37,6 +39,7 @@ contract User {
             ethAddress: _ethAddress,
             universityId: _universityId,
             role:_role,
+            courseName:_courseName,
             isActive: true
         });
         userAddresses.push(_ethAddress);

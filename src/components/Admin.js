@@ -13,6 +13,7 @@ class AdminRegistrationForm extends Component {
       universityId: '',
       account:null,
       role:'Student',
+      coursename:'Cybersecurity',
       allUsers: []
     };
     // const history=usehistory();
@@ -84,11 +85,12 @@ async componentDidMount(){
         const _uid=this.state.universityId;
         console.log("the role is",this.state.role)
         const _role=this.state.role;
+        const _coursename=this.state.coursename
         console.log("user address",newUserAddress)
         console.log("privateKey",newUserPrivateKey)
        try{
          await web3.eth.sendTransaction({from: this.state.account, to: newUserAddress, value: web3.utils.toWei('1', "ether")})
-        this.state.contract.methods.addUser(_name,_password,newUserAddress,_uid,_role).send({from:this.state.account}).on("transactionHash", (txHash) => {
+        this.state.contract.methods.addUser(_name,_password,newUserAddress,_uid,_coursename,_role).send({from:this.state.account}).on("transactionHash", (txHash) => {
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
           this.setState({ transactionHash: txHash });
@@ -123,7 +125,7 @@ async componentDidMount(){
   };
 
   render() {
-    const { name, username, password, universityId,role } = this.state;
+    const { name, username, password, universityId,role,coursename } = this.state;
 
     return (
       <div className="container mt-5">
@@ -162,6 +164,24 @@ async componentDidMount(){
               <option value="Student">Student</option>
               <option value="Staff">Staff</option>
             </select>
+              <div className="mb-3">
+            <label htmlFor="CourseName" className="form-label">
+              Coursename
+            </label>
+            <select
+              className="form-select"
+              id="coursename"
+              value={coursename}
+              onChange={(e) => this.setState({ coursename: e.target.value })}
+              required
+            >
+              <option value="" disabled>
+                Select Coursename
+              </option>
+              <option value="Cybersecurity">Cybersecurity</option>
+              <option value="ComputerScience">Computer Science</option>
+            </select>
+          </div>
           </div>
           <button type="submit" className="btn btn-primary">Register</button>
         </form>

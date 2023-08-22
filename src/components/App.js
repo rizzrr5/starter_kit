@@ -135,14 +135,14 @@ class App extends Component {
         const hash=result.path
 
 
-        this.state.contract.methods.submit(hash,'sads','0x73737fd55D89c851fd5496c8Ff295Ae1822b1E94').send({from:this.state.account}).on("transactionHash", (txHash) => {
+        this.state.contract.methods.submit(hash,courseworkId,'0x73737fd55D89c851fd5496c8Ff295Ae1822b1E94').send({from:this.state.account}).on("transactionHash", (txHash) => {
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
           this.setState({ transactionHash: txHash });
           localStorage.setItem("transactionHash", txHash);
             this.state.contract.events.DocumentSubmitted({}, (error, event) => {
                     if (!error) {
-                        console.log('Document submitted event:', event.returnValues.sender, event.returnValues.ipfsHash, event.returnValues.courseName,event.returnValues.timestamp);
+                        console.log('Document submitted event:', event.returnValues.sender, event.returnValues.ipfsHash, event.returnValues.courseId,event.returnValues.timestamp);
                         // You can update your UI or take any action based on the event here
                     } else {
                         console.log("Error in DocumentSubmitted event:", error);
@@ -275,18 +275,12 @@ catch (error) {
                   <img src={logo} className="App-logo" alt="logo" />
                 </a>
              <h2>File Submission</h2>
-             <form onSubmit={this.onSubmit} >
-
-               <input type='file' onChange={this.captureFile} />
-               <input type='submit'/>
-             </form>
+            
 
               {this.state.result && (
           <div className="App">
-        <h1>IPFS Content Viewer</h1>
-        <button onClick={() => window.open(dynamicLink, '_blank')}>
-          View IPFS Content
-        </button>
+        <h1>View Submissions</h1>
+      
           <button type="button" className="btn btn-primary" onClick={this.fetchUserSubmissions}>
                   Fetch My Submissions
                 </button>
@@ -308,6 +302,7 @@ catch (error) {
       </div>
 
         )}
+                <h1>View Coursework</h1>
    <button type="button" className="btn btn-primary" onClick={this.fetchCourseWork}>
           Fetch My Coursework
         </button>
@@ -318,6 +313,7 @@ catch (error) {
               {this.state.userCoursework.map((coursework, index) => (
                 <li key={index}>
                   Coursework ID: {coursework.courseworkId}<br />
+                  Coursework Name:{coursework.courseWorkName}<br />
                   <button
                     type="button"
                     className="btn btn-primary"

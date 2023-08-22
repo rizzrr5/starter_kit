@@ -8,8 +8,9 @@ const CourseworkSubmissionForm = () => {
   const [courseWorkName, setCourseWorkName] = useState('');
   const [moduleLeaderAddress, setModuleLeaderAddress] = useState('');
   const [courseworkId, setCourseworkId] = useState('');
-  const [courseName, setCourseName] = useState('');
+  // const [courseName, setCourseName] = useState('');
   const [contract, setContract] = useState(null);
+  const [contract1, setContract1] = useState(null);
   const [account, setAccount] = useState(null);
   useEffect(() => {
     loadWeb3();
@@ -45,6 +46,15 @@ const CourseworkSubmissionForm = () => {
       const contract = new web3.eth.Contract(abi, address);
       setContract(contract);
     }
+     const networkData1 = User.networks[networkId];
+    if (networkData) {
+      const abi1 = User.abi;
+      const address1 = networkData1.address;
+      console.log(address1)
+      const contract1 = new web3.eth.Contract(abi1, address1);
+      setContract1(contract1);
+    }
+
   }
     const submitCoursework = async () => {
     try {
@@ -54,8 +64,9 @@ const CourseworkSubmissionForm = () => {
       // Check if MetaMask is available
      const web3 = window.web3;
      console.log(account)
+     const courseName=await contract1.methods.getUsercourse(account).call();
         // Send transaction
-        await contract.methods.submitCoursework(courseWorkName, moduleLeaderAddress, courseworkId, courseName).send({ from:account});
+        await contract.methods.submitCoursework(courseWorkName, account, courseworkId, courseName).send({ from:account});
 
         alert('Coursework submitted successfully!');
       } 
@@ -71,14 +82,12 @@ const CourseworkSubmissionForm = () => {
         <label>Coursework Name:</label>
         <input type="text" value={courseWorkName} onChange={e => setCourseWorkName(e.target.value)} required /><br />
 
-        <label>Module Leader Address:</label>
-        <input type="text" value={moduleLeaderAddress} onChange={e => setModuleLeaderAddress(e.target.value)} required /><br />
+       
 
         <label>Coursework ID:</label>
         <input type="text" value={courseworkId} onChange={e => setCourseworkId(e.target.value)} required /><br />
 
-        <label>Course Name:</label>
-        <input type="text" value={courseName} onChange={e => setCourseName(e.target.value)} required /><br />
+       
 
         <button type="button" onClick={submitCoursework}>Submit Coursework</button>
       </form>

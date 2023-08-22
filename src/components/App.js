@@ -6,6 +6,7 @@ import { create } from 'ipfs-http-client';
 import Web3 from 'web3';
 import Iprm from '../abis/Iprm.json'
 import User from '../abis/User.json'
+import CourseWork from '../abis/CourseWork.json'
 // const ipfsClient=require('ipfs-http-client')
 // const ipfsClient=create();
 const projectId = '2TMLGJoTk4XnSGFp8vouWejROB4';
@@ -54,11 +55,27 @@ class App extends Component {
     }
     const networkData1=await User.networks[networkid]
     if(networkData1){ 
-      const abi1=Iprm.abi
-      const address1=networkData.address
+      const abi1=User.abi
+      const address1=networkData1.address
       // console.log(address)
       const contract1=new web3.eth.Contract(abi1,address1)
       this.setState({contract1:contract1},async ()=>{
+      })  
+
+    //   const hash = await contract1.methods.get().call();
+    // // console.log('hashs',hash);
+    // this.setState({result:hash},()=>{
+    // })   
+    }
+    const networkData2=await CourseWork.networks[networkid]
+    if(networkData2){ 
+      const abi2=CourseWork.abi
+      const address2=networkData2.address
+      // console.log(address)
+      console.log("address2",address2)
+      const contract2=new web3.eth.Contract(abi2,address2)
+      this.setState({contract2:contract2},async ()=>{
+        console.log("hi its done")
       })  
 
     //   const hash = await contract1.methods.get().call();
@@ -76,6 +93,7 @@ class App extends Component {
       buffer:null,
       contract:null,
       contract1:null,
+      contract2:null,
        result: localStorage.getItem("ipfsHash") || null,
        transactionHash:localStorage.getItem("transactionHash") || null, // Load from localStorage
     };
@@ -107,7 +125,7 @@ class App extends Component {
   }
 
   //QmbBr4TjPrT7NiM7PLwxpp9waaem2owmrR1njjM71Dcqep
-  onSubmit=(event)=>{
+  onSubmit=(courseworkId,event)=>{
       event.preventDefault()
       const web3=window.web3
     // console.log('submit form.')
@@ -176,6 +194,53 @@ class App extends Component {
       console.error("Error fetching user submissions:", error);
     }
   };
+  fetchCourseWork=async()=>{
+
+    if(!this.state.contract1 && !this.state.contract2){
+      return;
+    }
+    try{
+      const userSubmissions = await this.state.contract.methods.getUserSubmissions().call({ from: this.state.account });
+      console.log("User Submissions:", userSubmissions);
+      const userCourse2=await this.state.contract1.methods.getRole(this.state.account).call();
+      console.log(userCourse2)
+      const userCourse=await this.state.contract1.methods.getUsercourse(this.state.account).call();
+      console.log(userCourse)
+      console.log(this.state.contract2)
+      const userCoursework=await this.state.contract2.methods.getCourseworkList(userCourse).call();
+      this.setState({userCoursework})
+    }
+catch (error) {
+      console.error("Error fetching user submissions:", error);
+    }
+};
+  handleOpenSubmissionPopup(courseworkId) {
+    this.setState({
+      selectedCoursework: courseworkId,
+      popupOpen: true,
+    });
+  }
+
+  handleCloseSubmissionPopup() {
+    this.setState({
+      selectedCoursework: null,
+      popupOpen: false,
+    });
+  }
+  renderSubmissionPopup(courseworkId) {
+    return (
+      <div className="submission-popup">
+        <h3>Submit Coursework</h3>
+         <form onSubmit={(event) => this.onSubmit(courseworkId, event)} >
+
+               <input type='file' onChange={this.captureFile} />
+               <input type='submit'/>
+             </form>
+        <button onClick={() => this.handleCloseSubmissionPopup()}>Cancel</button>
+      </div>
+    );
+  }
+  
 
   render() {
      const infuraBaseUrl = 'https://intellectualpropertyrights.infura-ipfs.io/ipfs/';
@@ -243,6 +308,33 @@ class App extends Component {
       </div>
 
         )}
+   <button type="button" className="btn btn-primary" onClick={this.fetchCourseWork}>
+          Fetch My Coursework
+        </button>
+        {this.state.userCoursework != null && (
+          <div>
+            <h3>My Coursework Submissions:</h3>
+            <ul>
+              {this.state.userCoursework.map((coursework, index) => (
+                <li key={index}>
+                  Coursework ID: {coursework.courseworkId}<br />
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => this.handleOpenSubmissionPopup(coursework.courseworkId)}
+                  >
+                    Submit File
+                  </button>
+                  {this.state.popupOpen && this.state.selectedCoursework === coursework.courseworkId && (
+                    this.renderSubmissionPopup(coursework.courseworkId)
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+
                
               </div>
             </main>

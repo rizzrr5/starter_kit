@@ -73,6 +73,10 @@ contract User {
 
         return allUsers;
     }
+    function getUsercourse(address _ethAddress) public view returns (string memory){
+    require(users[_ethAddress].ethAddress !=address(0),"USer doesn't exist");
+    return users[_ethAddress].courseName;
+    }
     function deleteUser(address _ethAddress) public{
     require(users[_ethAddress].ethAddress != address(0));
   //      users[_ethAddress].ethAddress = 0x0;

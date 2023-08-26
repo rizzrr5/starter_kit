@@ -14,7 +14,7 @@ contract CourseWork {
     mapping(string => bool) private courseWorkId;
     mapping(string => string[]) private courseWorkKeys;
     mapping(string => mapping(string => Coursework)) private courseWorkList;
-
+    mapping(address => string[]) private modCourseWork;
     function submitCoursework(
         string memory _courseWorkName,
         address _moduleLeaderAddress,
@@ -35,7 +35,8 @@ contract CourseWork {
         work[_courseworkId] = newCoursework;
         courseWorkList[_courseName][_courseworkId] = newCoursework;
         courseWorkKeys[_courseName].push(_courseworkId);
-
+        modCourseWork[_moduleLeaderAddress].push(_courseworkId);
+       
         emit DocumentSubmitted(msg.sender, _courseworkId, _courseName, block.timestamp);
     }
 
@@ -49,6 +50,11 @@ contract CourseWork {
 
         return courseworkArray;
     }
+     
+  function getModCourseWork(address _moduleLeaderAddress) public view returns (string[] memory) {
+   string[] memory courseworkIds = modCourseWork[_moduleLeaderAddress];
+   return courseworkIds;
+   }
 
     event DocumentSubmitted(
         address indexed sender,

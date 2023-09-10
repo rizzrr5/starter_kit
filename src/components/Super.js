@@ -3,6 +3,7 @@ import Web3 from 'web3';
 import User from '../abis/User.json';
 import Iprm from '../abis/Iprm.json';
 import Coursework from '../abis/CourseWork.json';
+import Logout from './Logout';
 
 const CourseworkSubmissionForm = () => {
   const [courseWorkName, setCourseWorkName] = useState('');
@@ -105,8 +106,17 @@ const CourseworkSubmissionForm = () => {
         return;
       }
       const web3 = window.web3;
+      
       const courseName = await contract1.methods.getUsercourse(account).call();
+      const startTime = performance.now();
       await contract.methods.submitCoursework(courseWorkName, account, courseworkId, courseName).send({ from: account });
+      const endTime = performance.now();
+
+    // Calculate the time difference in milliseconds
+    const elapsedTime = endTime - startTime;
+
+    console.log("Time taken (milliseconds):", elapsedTime);
+
       alert('Coursework submitted successfully!');
     } catch (error) {
       console.error('Error submitting coursework:', error);
@@ -118,6 +128,24 @@ const CourseworkSubmissionForm = () => {
 
   return (
     <div>
+    <nav className="navbar navbar-dark fixed-top bg-dark flex-md-nowrap p-0 shadow">
+          <a
+            className="navbar-brand col-sm-3 col-md-2 mr-0"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            IPRM
+          </a>
+          <ul className="navbar-nav px-3">
+           <li className="nav-item text-nowrap d-none d-sm-block">
+             <small className="text-white">{account}</small>
+           </li>
+          </ul>
+            <div>
+        {/* Other navigation links */}
+        <Logout />
+      </div>
+        </nav>
       <h1>Submit Coursework</h1>
       <form>
         <label>Coursework Name:</label>

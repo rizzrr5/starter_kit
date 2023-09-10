@@ -83,7 +83,7 @@ const LoginForm = () => {
   e.preventDefault();
   const web3 = window.web3;
 
-  if (username === 'admin' && password === 'admin') {
+  if (username === 'admin' && password === 'admin' && account==='0xBCd51225Df1A2140700944a310264d02A7547204') {
     setError('');
     history('/Admin');
   } else if (contract) {

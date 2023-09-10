@@ -4,9 +4,12 @@ import './App.css';
 // import ipfsClient from 'ipfs-http-client';
 import { create } from 'ipfs-http-client';
 import Web3 from 'web3';
-import Iprm from '../abis/Iprm.json'
-import User from '../abis/User.json'
-import CourseWork from '../abis/CourseWork.json'
+import Iprm from '../abis/Iprm.json';
+import User from '../abis/User.json';
+import CourseWork from '../abis/CourseWork.json';
+import CryptoJS from 'crypto-js';
+import Logout from './Logout';
+
 // const ipfsClient=require('ipfs-http-client')
 // const ipfsClient=create();
 const projectId = '2TMLGJoTk4XnSGFp8vouWejROB4';
@@ -128,21 +131,60 @@ class App extends Component {
   onSubmit=(courseworkId,event)=>{
       event.preventDefault()
       const web3=window.web3
+      const startTime3=performance.now();
+        const generatedKey = CryptoJS.lib.WordArray.random(256/8).toString();
+        console.log( generatedKey)
+       // const generatedKey = '0x375b222bea5ea424341cd111c11230804963583224842497b02f3e44bfdcff39'; // Replace with your key
+    const encryptedData = CryptoJS.AES.encrypt(
+      CryptoJS.enc.Utf8.parse(this.state.buffer),
+      CryptoJS.enc.Utf8.parse( generatedKey),
+      {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7,
+      }
+    ).toString();
+     const endTime3 = performance.now();
+
+    // Calculate the time difference in milliseconds
+    const elapsedTime3 = endTime3 - startTime3;
+
+    console.log("Time taken encryption (milliseconds):", elapsedTime3);
+
+
     // console.log('submit form.')
+    const startTime = performance.now();
       ipfs.add( this.state.buffer).then((result)=>{
         // console.log(result)
-        
-        const hash=result.path
+        const endTime = performance.now();
 
+    // Calculate the time difference in milliseconds
+    const elapsedTime = endTime - startTime;
 
+    console.log("Time taken (milliseconds):", elapsedTime);
+        const hash=result.path;
+  //       (async () => {
+  //   for await (const chunk of ipfs.cat(hash)) {
+  //     const content = chunk.toString();
+  //     // console.log("Chunk of content:", content);
+  //   }
+  // })();
+  
+
+const startTime2 = performance.now();
         this.state.contract.methods.submit(hash,courseworkId,'0x73737fd55D89c851fd5496c8Ff295Ae1822b1E94').send({from:this.state.account}).on("transactionHash", (txHash) => {
+          const endTime2 = performance.now();
+
+    // Calculate the time difference in milliseconds
+    const elapsedTime2 = endTime2 - startTime2;
+
+    console.log("Time taken (milliseconds):", elapsedTime2);
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
           this.setState({ transactionHash: txHash });
           localStorage.setItem("transactionHash", txHash);
             this.state.contract.events.DocumentSubmitted({}, (error, event) => {
                     if (!error) {
-                        console.log('Document submitted event:', event.returnValues.sender, event.returnValues.ipfsHash, event.returnValues.courseId,event.returnValues.timestamp);
+                        console.log('Document submitted event:', event.returnValues.sender, event.returnValues.ipfsHash, event.returnValues.courseId,Date(event.returnValues.timestamp*1000));
                         // You can update your UI or take any action based on the event here
                     } else {
                         console.log("Error in DocumentSubmitted event:", error);
@@ -179,21 +221,77 @@ class App extends Component {
     })
 
   }
-   fetchUserSubmissions = async () => {
-    const { contract } = this.state;
+fetchUserSubmissions = async () => {
+  const { contract } = this.state;
 
-    if (!contract) {
-      return;
-    }
+  if (!contract) {
+    return;
+  }
 
-    try {
-      const userSubmissions = await contract.methods.getUserSubmissions().call({ from: this.state.account });
-      console.log("User Submissions:", userSubmissions);
-      this.setState({ userSubmissions });
-    } catch (error) {
-      console.error("Error fetching user submissions:", error);
+  const userSubmissions1 = await contract.methods.getUserSubmissions().call({ from: this.state.account });
+  console.log(userSubmissions1)
+
+  // Convert the async generator to an array
+//   const submissionHashes = [...userSubmissions1];
+//   console.log(submissionHashes);
+
+//   // Fetch and decrypt each submission
+//  const decryptedSubmissions = await Promise.all(
+//   submissionHashes.map(async (submissionHash) => {
+//     try {
+//       const encryptedChunks = [];
+//       for await (const chunk of ipfs.cat(submissionHash)) {
+//        //  const content = chunk.toString();
+//        // console.log("Chunk of content:", content);
+//         encryptedChunks.push(chunk);
+//       }
+
+//       const encryptedData = new Uint8Array(encryptedChunks.reduce((acc, chunk) => [...acc, ...chunk], []));
+//       // console.log("Encrypted Data:", encryptedData);
+
+//       const decryptedData = this.decryptData(encryptedData);
+//       // console.log("Decrypted Data:", decryptedData);
+//       const decryptedBlob = new Blob([decryptedData]);
+//   const decryptedBlobURL = URL.createObjectURL(decryptedBlob);
+
+//           return { hash: submissionHash, decryptedBlobURL };
+//     } catch (error) {
+//       console.error("Error fetching or decrypting submission:", error);
+//       return null;
+//     }
+//   })
+// );
+
+      // console.log("Decrypted Submissions:", decryptedSubmissions);
+    this.setState({ userSubmissions: userSubmissions1 });
+
+};
+ decryptData(encryptedData) {
+  const encryptionKey = '0x375b222bea5ea424341cd111c11230804963583224842497b02f3e44bfdcff39'; // Assuming you've stored the encryption key in the state
+
+  // Convert the Uint8Array to a WordArray
+  const encryptedWordArray = CryptoJS.lib.WordArray.create(encryptedData);
+
+  // Decrypt the WordArray
+  const decryptedWordArray = CryptoJS.AES.decrypt(
+    {
+      ciphertext: encryptedWordArray,
+    },
+    CryptoJS.enc.Hex.parse(encryptionKey), // Convert key to WordArray
+    {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
     }
-  };
+  );
+// console.log("Decrypted WordArray:", decryptedWordArray);
+  // Convert the decrypted WordArray to a Uint8Array
+  const decryptedUint8Array = new Uint8Array(decryptedWordArray.sigBytes);
+  for (let i = 0; i < decryptedWordArray.sigBytes; i++) {
+    decryptedUint8Array[i] = (decryptedWordArray.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+  }
+ 
+  return decryptedUint8Array;
+}
   fetchCourseWork=async()=>{
 
     if(!this.state.contract1 && !this.state.contract2){
@@ -262,18 +360,16 @@ catch (error) {
              <small className="text-white">{this.state.account}</small>
            </li>
           </ul>
+            <div>
+        {/* Other navigation links */}
+        <Logout />
+      </div>
         </nav>
         <div className="container-fluid mt-5">
           <div className="row">
             <main role="main" className="col-lg-12 d-flex  justify-content-center ">
               <div className="content mr-auto ml-auto">
-                <a
-                  href="http://www.dappuniversity.com/bootcamp"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img src={logo} className="App-logo" alt="logo" />
-                </a>
+              
              <h2>File Submission</h2>
             
 
@@ -284,7 +380,7 @@ catch (error) {
           <button type="button" className="btn btn-primary" onClick={this.fetchUserSubmissions}>
                   Fetch My Submissions
                 </button>
-                {this.state.userSubmissions !=null && (
+           {this.state.userSubmissions !=null && (
                   <div>
                     <h3>My Submissions:</h3>
                     <ul>
@@ -298,7 +394,6 @@ catch (error) {
                     </ul>
                   </div>
                 )}
-
       </div>
 
         )}

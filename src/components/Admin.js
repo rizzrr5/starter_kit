@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { withRouter,usehistory } from 'react-router-dom';
 import Web3 from 'web3';
+import './App.css';
 import User from '../abis/User.json'
+import Logout from './Logout';
 class AdminRegistrationForm extends Component {
   constructor(props) {
     super(props);
@@ -14,7 +16,8 @@ class AdminRegistrationForm extends Component {
       account:null,
       role:'Student',
       coursename:'Cybersecurity',
-      allUsers: []
+      allUsers: [],
+      selectedUserAddress: null,
     };
     // const history=usehistory();
   }
@@ -69,6 +72,14 @@ async componentDidMount(){
     
   }
 }
+ handleLogout = () => {
+    // Implement your logout logic here, such as clearing tokens, sessions, etc.
+    // For example, you might use localStorage or sessionStorage to store tokens.
+    localStorage.removeItem('authToken'); // Clear the authentication token
+
+    // Redirect the user to the login or home page
+    window.location.href = '/login'; // Replace with your login page URL
+  };
   handleSubmit = async (e) => {
     e.preventDefault();
     // You can add your logic to handle form submission, e.g., sending data to the backend
@@ -90,7 +101,14 @@ async componentDidMount(){
         console.log("privateKey",newUserPrivateKey)
        try{
          await web3.eth.sendTransaction({from: this.state.account, to: newUserAddress, value: web3.utils.toWei('1', "ether")})
+         const startTime = performance.now();
         this.state.contract.methods.addUser(_name,_password,newUserAddress,_uid,_coursename,_role).send({from:this.state.account}).on("transactionHash", (txHash) => {
+           const endTime = performance.now();
+
+    // Calculate the time difference in milliseconds
+    const elapsedTime = endTime - startTime;
+
+    console.log("Time taken (milliseconds):", elapsedTime);
           console.log("Transaction Hash:", txHash);
           // Transaction hash is available here, you can use it as needed
           this.setState({ transactionHash: txHash });
@@ -123,21 +141,40 @@ async componentDidMount(){
       console.error("Error fetching users:", error);
     }
   };
+deleteUser = async (ethAddress) => {
+    const { contract } = this.state;
+
+    if (!contract) {
+      return;
+    }
+
+    try {
+      console.log(ethAddress)
+      await this.state.contract.methods.deleteUser(ethAddress).send({from:this.state.account});
+    
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
 
   render() {
-    const { name, username, password, universityId,role,coursename } = this.state;
+    const { name, username, password, universityId,role,coursename,selectedUserAddress } = this.state;
 
     return (
       <div className="container mt-5">
+          <div>
+        {/* Other navigation links */}
+        <Logout />
+      </div>
         <h2>Admin Registration</h2>
         <form onSubmit={this.handleSubmit}>
           <div className="mb-3">
             <label htmlFor="name" className="form-label">Name</label>
-            <input type="text" className="form-control" id="name" value={name} onChange={(e) => this.setState({ name: e.target.value })} required />
+            <input type="text" className="form-control" id="name" value={name} onChange={(e) => this.setState({ name: e.target.value })} required autoComplete="off" />
           </div>
           <div className="mb-3">
             <label htmlFor="username" className="form-label">Username</label>
-            <input type="text" className="form-control" id="username" value={username} onChange={(e) => this.setState({ username: e.target.value })} required />
+            <input type="text" className="form-control" id="username" value={username} onChange={(e) => this.setState({ username: e.target.value })} required autoComplete="off" />
           </div>
           <div className="mb-3">
             <label htmlFor="password" className="form-label">Password</label>
@@ -145,7 +182,7 @@ async componentDidMount(){
           </div>
           <div className="mb-3">
             <label htmlFor="universityId" className="form-label">University ID</label>
-            <input type="number" className="form-control" id="universityId" value={universityId} onChange={(e) => this.setState({ universityId: e.target.value })} required />
+            <input type="number" className="form-control" id="universityId" value={universityId} onChange={(e) => this.setState({ universityId: e.target.value })} required autoComplete="off" />
           </div>
             <div className="mb-3">
             <label htmlFor="role" className="form-label">
@@ -191,18 +228,33 @@ async componentDidMount(){
 
         {/* Display generated user address */}
         {/* Display fetched user data */}
-        <div className="mt-3">
-          <h3>All Users</h3>
-          <ul>
-            {this.state.allUsers.map((user, index) => (
-              <li key={index}>
-                Name: {user.name}, Address: {user.ethAddress}
-              </li>
-            ))}
-          </ul>
-        </div>
+<div className="mt-3">
+  <h3>All Users</h3>
+  <ul>
+    {this.state.allUsers.map((user, index) => (
+      // Check if the Ethereum address starts with "0x000000"
+      // If it does, don't render this user
+      // Otherwise, render the user with the "Remove user" button
+      !user.ethAddress.startsWith("0x000000") && (
+        <li key={index}>
+          Name: {user.name}, Address:{" "}
+          <span>
+            {user.ethAddress}{" "}
+            <button
+              style={{ cursor: "pointer", color: "red" }}
+              onClick={() => this.deleteUser(user.ethAddress)}
+            >
+              Remove user
+            </button>
+          </span>
+        </li>
+      )
+    ))}
+  </ul>
+</div>
+       
       </div>
-      
+
       </div>
     );
   }

@@ -97,6 +97,7 @@ class App extends Component {
       contract:null,
       contract1:null,
       contract2:null,
+       selectedSubmissionDetails: null,
        result: localStorage.getItem("ipfsHash") || null,
        transactionHash:localStorage.getItem("transactionHash") || null, // Load from localStorage
     };
@@ -312,6 +313,36 @@ catch (error) {
       console.error("Error fetching user submissions:", error);
     }
 };
+
+  fetchSubmissionDetails=async(ipfsHash)=>{
+
+    if(!this.state.contract1 && !this.state.contract2){
+      return;
+    }
+    try{
+      const details=await this.state.contract.methods.subm(ipfsHash).call({from:this.state.account})
+      console.log(details)
+      const time=details[3];
+   
+                console.log('Timestamp:', time);
+                const date = new Date(time * 1000);
+                // details[3]=date;
+                console.log(date);
+      // const userSubmissions = await this.state.contract.methods.getUserSubmissions().call({ from: this.state.account });
+      // console.log("User Submissions:", userSubmissions);
+      // const userCourse2=await this.state.contract1.methods.getRole(this.state.account).call();
+      // console.log(userCourse2)
+      // const userCourse=await this.state.contract1.methods.getUsercourse(this.state.account).call();
+      // console.log(userCourse)
+      // console.log(this.state.contract2)
+      // const userCoursework=await this.state.contract2.methods.getCourseworkList(userCourse).call();
+      // this.setState({userCoursework})
+       this.setState({ selectedSubmissionDetails: details });
+    }
+catch (error) {
+      console.error("Error fetching user submissions:", error);
+    }
+};
   handleOpenSubmissionPopup(courseworkId) {
     this.setState({
       selectedCoursework: courseworkId,
@@ -337,8 +368,10 @@ catch (error) {
         <button onClick={() => this.handleCloseSubmissionPopup()}>Cancel</button>
       </div>
     );
-  }
   
+  }
+
+
 
   render() {
      const infuraBaseUrl = 'https://intellectualpropertyrights.infura-ipfs.io/ipfs/';
@@ -383,17 +416,38 @@ catch (error) {
            {this.state.userSubmissions !=null && (
                   <div>
                     <h3>My Submissions:</h3>
-                    <ul>
-                      {this.state.userSubmissions.map((submissionHash, index) => (
-                        <li key={index}>
-                          <a href={this.state.url + submissionHash} target="_blank" rel="noopener noreferrer">
-                            {submissionHash}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
+                   <ul>
+  {this.state.userSubmissions.map((submissionHash, index) => (
+    <li key={index}>
+      <a
+        href="#"
+        onClick={() => this.fetchSubmissionDetails(submissionHash)}
+      >
+        {submissionHash}
+      </a>
+    </li>
+  ))}
+</ul>
+
                   </div>
                 )}
+                {this.state.selectedSubmissionDetails && (
+  <div>
+    <h3>Submission Details:</h3>
+    <p>Course ID: {this.state.selectedSubmissionDetails[4]}</p>
+    <p>Time: {new Date(this.state.selectedSubmissionDetails[3] * 1000).toLocaleString()}</p>
+    <p>
+      Link:{" "}
+      <a
+        href={this.state.url + this.state.selectedSubmissionDetails[0]}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {this.state.selectedSubmissionDetails[0]}
+      </a>
+    </p>
+  </div>
+)}
       </div>
 
         )}

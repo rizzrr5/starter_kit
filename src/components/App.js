@@ -12,6 +12,7 @@ import Logout from './Logout';
 
 // const ipfsClient=require('ipfs-http-client')
 // const ipfsClient=create();
+let ipfsHashToEncryptedData = {};
 const projectId = '2TMLGJoTk4XnSGFp8vouWejROB4';
 const projectSecret = '56bd663ece086b2320374a721e4bc015';
 const auth =
@@ -89,6 +90,7 @@ class App extends Component {
     
   }
   constructor(props){
+    let ipfsHashToEncryptedData = {};
     super(props);
     this.state={
       account:'',
@@ -97,6 +99,7 @@ class App extends Component {
       contract:null,
       contract1:null,
       contract2:null,
+      data:null,
        selectedSubmissionDetails: null,
        result: localStorage.getItem("ipfsHash") || null,
        transactionHash:localStorage.getItem("transactionHash") || null, // Load from localStorage
@@ -136,6 +139,9 @@ class App extends Component {
         const generatedKey1 = CryptoJS.lib.WordArray.random(256/8).toString();
         console.log(generatedKey1);
        console.log("this is the buffuh",this.state.buffer);
+       const textDecoder = new TextDecoder('utf-8'); // Specify the encoding if known
+const originalText = textDecoder.decode(this.state.buffer);
+console.log(originalText);
 // const generatedKey = '0x375b222bea5ea424341cd111c11230804963583224842497b02f3e44bfdcff39'; 
 // Replace with your key
 const generatedKey='2230acaf43a388f0285a3b749f375c18b5e7dd79a17932fca12228141c58926b'
@@ -145,8 +151,8 @@ console.log("the crypro form",dataToEncrypt);
 // console.log("the string version",dataToEncrypt.toString());
 // const decryptedWordArray2 = CryptoJS.enc.Utf8.parse(dataToEncrypt.toString());
 // console.log(decryptedWordArray2);
-const base64String = CryptoJS.enc.Base64.stringify(dataToEncrypt);
-console.log("Base64-encoded string:", base64String.length);
+// const base64String = CryptoJS.enc.Base64.stringify(dataToEncrypt);
+// console.log("Base64-encoded string:", base64String.length);
 // console.log("string lenght",dataToEncrypt.toString().length);
  // const decryptedBuffer1 = new Uint8Array(dataToEncrypt.toString().length);
  //   for (let i = 0; i < dataToEncrypt.toString().length; i++) {
@@ -165,89 +171,28 @@ const encryptedData = CryptoJS.AES.encrypt(
 );
 
 console.log("Encrypted Data:", encryptedData);
-
-// Decrypt the data
-const decryptedData = CryptoJS.AES.decrypt(
-  encryptedData, // Pass the ciphertext directly
-  CryptoJS.enc.Utf8.parse(generatedKey),
-  {
-    iv: iv,
-    mode: CryptoJS.mode.CBC,
-    padding: CryptoJS.pad.Pkcs7,
-  }
-)
-console.log("decryptrd dAta",decryptedData);
-const decryptedUint8Array = new Uint8Array(decryptedData.sigBytes);
-
-for (let i = 0; i < decryptedData.sigBytes; i++) {
-  const wordIndex = i >>> 2;  // Calculate the word index
-  const byteShift = (i % 4) * 8;  // Calculate the byte shift within the word
-
-  // Ensure the word index is within bounds
-  if (wordIndex >= 0 && wordIndex < decryptedData.words.length) {
-    // Access the byte from the word and store it in the Uint8Array
-    decryptedUint8Array[i] = (decryptedData.words[wordIndex] >>> (24 - byteShift)) & 0xff;
-  } else {
-    console.error("Error: Index out of bounds");
-    break;  // Exit the loop if an error occurs
+this.setState({data:encryptedData});
+console.log(this.state.data);
+const ciphertextWords = encryptedData.ciphertext.words;
+console.log(ciphertextWords);
+const ciphertextBytes = new Uint8Array(ciphertextWords.length * 4);
+for (let i = 0; i < ciphertextWords.length; i++) {
+  const word = ciphertextWords[i];
+  for (let j = 0; j < 4; j++) {
+    const byte = (word >> (j * 8)) & 0xff;
+    ciphertextBytes[i * 4 + j] = byte;
   }
 }
-
-console.log(decryptedUint8Array);
-// const decryptedWordArray1 = CryptoJS.enc.Utf8.parse(decryptedData);
-// console.log(decryptedWordArray1);
-// .toString(CryptoJS.enc.Utf8);
-// console.log(decryptedData);
-// console.log(decryptedData.length);
-// const decryptedUint8Array = new Uint8Array(decryptedData.length);
-// for (let i = 0; i < decryptedData.length; i++) {
-//   decryptedUint8Array[i] = decryptedData.charCodeAt(i) & 0xff;
-// }
-
-// console.log(decryptedUint8Array);
-
-// console.log("string",CryptoJS.enc.Utf8.stringify(decryptedData));
-// console.log("length",CryptoJS.enc.Utf8.stringify(decryptedData).length);
-// const decryptedBuffer = new Uint8Array(CryptoJS.enc.Utf8.stringify(decryptedData).length);
-//   for (let i = 0; i < CryptoJS.enc.Utf8.stringify(decryptedData).length; i++) {
-//     decryptedBuffer[i] = CryptoJS.enc.Utf8.stringify(decryptedData).charCodeAt(i);
-//   }
-// console.log(decryptedBuffer);
-// const decryptedWordArray1 = CryptoJS.enc.Utf8.parse(CryptoJS.enc.Utf8.stringify(decryptedData));
-// console.log(decryptedWordArray1);
+console.log(ciphertextBytes);
+ const encryptedWordArray = CryptoJS.lib.WordArray.create(ciphertextBytes);
+ console.log(encryptedWordArray);
 
 
- 
-// console.log(decryptedUint8Array);
-// console.log(decryptedUint8Array);
-// if (decryptedData.sigBytes > 0) {
-//   // Successfully decrypted
-//   const decryptedText = CryptoJS.enc.Utf8.stringify(decryptedData);
-//   console.log(decryptedText);
-
-//   // Convert the decrypted data to a Uint8Array
-//   const decryptedBuffer = new Uint8Array(decryptedText.length);
-//   for (let i = 0; i < decryptedText.length; i++) {
-//     decryptedBuffer[i] = decryptedText.charCodeAt(i);
-//   }
-
-//   console.log("Decrypted Data:", decryptedBuffer);
-// } else {
-//   console.log("Decryption failed.");
-// }
-
-// Now, decryptedBuffer contains the decrypted data in the same format as the input this.state.buffer
-
-
-    // Calculate the time difference in milliseconds
-    // const elapsedTime3 = endTime3 - startTime3;
-
-    // console.log("Time taken encryption (milliseconds):", elapsedTime3);
 
 
     // console.log('submit form.')
     const startTime = performance.now();
-      ipfs.add( this.state.buffer).then((result)=>{
+      ipfs.add( ciphertextBytes).then((result)=>{
         // console.log(result)
         const endTime = performance.now();
 
@@ -256,6 +201,8 @@ console.log(decryptedUint8Array);
 
     console.log("Time taken (milliseconds):", elapsedTime);
         const hash=result.path;
+        ipfsHashToEncryptedData[hash] = encryptedData;
+        console.log("trial",ipfsHashToEncryptedData[hash]);
   //       (async () => {
   //   for await (const chunk of ipfs.cat(hash)) {
   //     const content = chunk.toString();
@@ -325,65 +272,47 @@ fetchUserSubmissions = async () => {
   const userSubmissions1 = await contract.methods.getUserSubmissions().call({ from: this.state.account });
   console.log(userSubmissions1)
 
-  // Convert the async generator to an array
-//   const submissionHashes = [...userSubmissions1];
-//   console.log(submissionHashes);
 
-//   // Fetch and decrypt each submission
-//  const decryptedSubmissions = await Promise.all(
-//   submissionHashes.map(async (submissionHash) => {
-//     try {
-//       const encryptedChunks = [];
-//       for await (const chunk of ipfs.cat(submissionHash)) {
-//        //  const content = chunk.toString();
-//        // console.log("Chunk of content:", content);
-//         encryptedChunks.push(chunk);
-//       }
-
-//       const encryptedData = new Uint8Array(encryptedChunks.reduce((acc, chunk) => [...acc, ...chunk], []));
-//       // console.log("Encrypted Data:", encryptedData);
-
-//       const decryptedData = this.decryptData(encryptedData);
-//       // console.log("Decrypted Data:", decryptedData);
-//       const decryptedBlob = new Blob([decryptedData]);
-//   const decryptedBlobURL = URL.createObjectURL(decryptedBlob);
-
-//           return { hash: submissionHash, decryptedBlobURL };
-//     } catch (error) {
-//       console.error("Error fetching or decrypting submission:", error);
-//       return null;
-//     }
-//   })
-// );
 
       // console.log("Decrypted Submissions:", decryptedSubmissions);
     this.setState({ userSubmissions: userSubmissions1 });
 
 };
  decryptData(encryptedData) {
-  const encryptionKey = '0x375b222bea5ea424341cd111c11230804963583224842497b02f3e44bfdcff39'; // Assuming you've stored the encryption key in the state
-
+  
+   const generatedKey='2230acaf43a388f0285a3b749f375c18b5e7dd79a17932fca12228141c58926b'
+const iv = CryptoJS.enc.Utf8.parse('I8zyA4lVhMCaJ5Kg');
   // Convert the Uint8Array to a WordArray
-  const encryptedWordArray = CryptoJS.lib.WordArray.create(encryptedData);
-
-  // Decrypt the WordArray
-  const decryptedWordArray = CryptoJS.AES.decrypt(
-    {
-      ciphertext: encryptedWordArray,
-    },
-    CryptoJS.enc.Hex.parse(encryptionKey), // Convert key to WordArray
-    {
-      mode: CryptoJS.mode.ECB,
-      padding: CryptoJS.pad.Pkcs7,
-    }
-  );
-// console.log("Decrypted WordArray:", decryptedWordArray);
-  // Convert the decrypted WordArray to a Uint8Array
-  const decryptedUint8Array = new Uint8Array(decryptedWordArray.sigBytes);
-  for (let i = 0; i < decryptedWordArray.sigBytes; i++) {
-    decryptedUint8Array[i] = (decryptedWordArray.words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+ const decryptedData = CryptoJS.AES.decrypt(
+  encryptedData,  
+  // encryptedData.toString(), // Pass the ciphertext directly
+  CryptoJS.enc.Utf8.parse(generatedKey),
+  {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
   }
- 
+)
+console.log("decryptrd dAta",decryptedData);
+
+const decryptedUint8Array = new Uint8Array(decryptedData.sigBytes);
+
+for (let i = 0; i < decryptedData.sigBytes; i++) {
+  const wordIndex = i >>> 2;  // Calculate the word index
+  const byteShift = (i % 4) * 8;  // Calculate the byte shift within the word
+
+  // Ensure the word index is within bounds
+  if (wordIndex >= 0 && wordIndex < decryptedData.words.length) {
+    // Access the byte from the word and store it in the Uint8Array
+    decryptedUint8Array[i] = (decryptedData.words[wordIndex] >>> (24 - byteShift)) & 0xff;
+  } else {
+    console.error("Error: Index out of bounds");
+    break;  // Exit the loop if an error occurs
+  }
+}
+
+console.log(decryptedUint8Array);
+
   return decryptedUint8Array;
 }
   fetchCourseWork=async()=>{
@@ -406,6 +335,47 @@ catch (error) {
       console.error("Error fetching user submissions:", error);
     }
 };
+fetchurl=async(hash)=>{
+    // Convert the async generator to an array
+const ipfsHash = hash; // Assuming you have the IPFS hash
+ const data=ipfs.cat(hash);
+  // 'data' is the content retrieved from IPFS as a Uint8Array
+  console.log("Data from IPFS:", data);
+  console.log("this data",ipfsHashToEncryptedData[hash]);
+        const decryptedData = this.decryptData(ipfsHashToEncryptedData[hash]);
+      console.log("Decrypted Data:", decryptedData);
+const blob = new Blob([decryptedData], { type: 'application/pdf' }); // Adjust the type as needed
+const blobUrl = URL.createObjectURL(blob);
+const downloadLink = document.createElement('a');
+downloadLink.href = blobUrl;
+downloadLink.download = 'filename.pdf'; // Specify the desired filename
+downloadLink.click();
+
+  // Convert Uint8Array back to WordArray
+
+   // Fetch and decrypt each submission
+//  const decryptedSubmissions = await Promise.all(
+//   submissionHashes.map(async (submissionHash) => {
+//     try {
+//       const encryptedChunks = [];
+//       for await (const chunk of ipfs.cat(submissionHash)) {
+//        //  const content = chunk.toString();
+//        // console.log("Chunk of content:", content);
+//         encryptedChunks.push(chunk);
+//       }
+
+//       const encryptedData = new Uint8Array(encryptedChunks.reduce((acc, chunk) => [...acc, ...chunk], []));
+//       // console.log("Encrypted Data:", encryptedData);
+
+
+//     } catch (error) {
+//       console.error("Error fetching or decrypting submission:", error);
+//       return null;
+//     }
+//   })
+// );
+
+}
 
   fetchSubmissionDetails=async(ipfsHash)=>{
 
@@ -421,15 +391,8 @@ catch (error) {
                 const date = new Date(time * 1000);
                 // details[3]=date;
                 console.log(date);
-      // const userSubmissions = await this.state.contract.methods.getUserSubmissions().call({ from: this.state.account });
-      // console.log("User Submissions:", userSubmissions);
-      // const userCourse2=await this.state.contract1.methods.getRole(this.state.account).call();
-      // console.log(userCourse2)
-      // const userCourse=await this.state.contract1.methods.getUsercourse(this.state.account).call();
-      // console.log(userCourse)
-      // console.log(this.state.contract2)
-      // const userCoursework=await this.state.contract2.methods.getCourseworkList(userCourse).call();
-      // this.setState({userCoursework})
+        const d=this.fetchurl(details[0]);        
+    
        this.setState({ selectedSubmissionDetails: details });
     }
 catch (error) {

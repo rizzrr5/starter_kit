@@ -133,23 +133,116 @@ class App extends Component {
       event.preventDefault()
       const web3=window.web3
       const startTime3=performance.now();
-        const generatedKey = CryptoJS.lib.WordArray.random(256/8).toString();
-        console.log( generatedKey)
-       // const generatedKey = '0x375b222bea5ea424341cd111c11230804963583224842497b02f3e44bfdcff39'; // Replace with your key
-    const encryptedData = CryptoJS.AES.encrypt(
-      CryptoJS.enc.Utf8.parse(this.state.buffer),
-      CryptoJS.enc.Utf8.parse( generatedKey),
-      {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-      }
-    ).toString();
-     const endTime3 = performance.now();
+        const generatedKey1 = CryptoJS.lib.WordArray.random(256/8).toString();
+        console.log(generatedKey1);
+       console.log("this is the buffuh",this.state.buffer);
+// const generatedKey = '0x375b222bea5ea424341cd111c11230804963583224842497b02f3e44bfdcff39'; 
+// Replace with your key
+const generatedKey='2230acaf43a388f0285a3b749f375c18b5e7dd79a17932fca12228141c58926b'
+const iv = CryptoJS.enc.Utf8.parse('I8zyA4lVhMCaJ5Kg');
+const dataToEncrypt = CryptoJS.lib.WordArray.create(this.state.buffer);
+console.log("the crypro form",dataToEncrypt);
+// console.log("the string version",dataToEncrypt.toString());
+// const decryptedWordArray2 = CryptoJS.enc.Utf8.parse(dataToEncrypt.toString());
+// console.log(decryptedWordArray2);
+const base64String = CryptoJS.enc.Base64.stringify(dataToEncrypt);
+console.log("Base64-encoded string:", base64String.length);
+// console.log("string lenght",dataToEncrypt.toString().length);
+ // const decryptedBuffer1 = new Uint8Array(dataToEncrypt.toString().length);
+ //   for (let i = 0; i < dataToEncrypt.toString().length; i++) {
+ //     decryptedBuffer1[i] = dataToEncrypt.toString().charCodeAt(i);
+ //  }
+  // console.log("decrypted buffer",decryptedBuffer1);
+
+const encryptedData = CryptoJS.AES.encrypt(
+  dataToEncrypt,
+  CryptoJS.enc.Utf8.parse(generatedKey),
+  {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  }
+);
+
+console.log("Encrypted Data:", encryptedData);
+
+// Decrypt the data
+const decryptedData = CryptoJS.AES.decrypt(
+  encryptedData, // Pass the ciphertext directly
+  CryptoJS.enc.Utf8.parse(generatedKey),
+  {
+    iv: iv,
+    mode: CryptoJS.mode.CBC,
+    padding: CryptoJS.pad.Pkcs7,
+  }
+)
+console.log("decryptrd dAta",decryptedData);
+const decryptedUint8Array = new Uint8Array(decryptedData.sigBytes);
+
+for (let i = 0; i < decryptedData.sigBytes; i++) {
+  const wordIndex = i >>> 2;  // Calculate the word index
+  const byteShift = (i % 4) * 8;  // Calculate the byte shift within the word
+
+  // Ensure the word index is within bounds
+  if (wordIndex >= 0 && wordIndex < decryptedData.words.length) {
+    // Access the byte from the word and store it in the Uint8Array
+    decryptedUint8Array[i] = (decryptedData.words[wordIndex] >>> (24 - byteShift)) & 0xff;
+  } else {
+    console.error("Error: Index out of bounds");
+    break;  // Exit the loop if an error occurs
+  }
+}
+
+console.log(decryptedUint8Array);
+// const decryptedWordArray1 = CryptoJS.enc.Utf8.parse(decryptedData);
+// console.log(decryptedWordArray1);
+// .toString(CryptoJS.enc.Utf8);
+// console.log(decryptedData);
+// console.log(decryptedData.length);
+// const decryptedUint8Array = new Uint8Array(decryptedData.length);
+// for (let i = 0; i < decryptedData.length; i++) {
+//   decryptedUint8Array[i] = decryptedData.charCodeAt(i) & 0xff;
+// }
+
+// console.log(decryptedUint8Array);
+
+// console.log("string",CryptoJS.enc.Utf8.stringify(decryptedData));
+// console.log("length",CryptoJS.enc.Utf8.stringify(decryptedData).length);
+// const decryptedBuffer = new Uint8Array(CryptoJS.enc.Utf8.stringify(decryptedData).length);
+//   for (let i = 0; i < CryptoJS.enc.Utf8.stringify(decryptedData).length; i++) {
+//     decryptedBuffer[i] = CryptoJS.enc.Utf8.stringify(decryptedData).charCodeAt(i);
+//   }
+// console.log(decryptedBuffer);
+// const decryptedWordArray1 = CryptoJS.enc.Utf8.parse(CryptoJS.enc.Utf8.stringify(decryptedData));
+// console.log(decryptedWordArray1);
+
+
+ 
+// console.log(decryptedUint8Array);
+// console.log(decryptedUint8Array);
+// if (decryptedData.sigBytes > 0) {
+//   // Successfully decrypted
+//   const decryptedText = CryptoJS.enc.Utf8.stringify(decryptedData);
+//   console.log(decryptedText);
+
+//   // Convert the decrypted data to a Uint8Array
+//   const decryptedBuffer = new Uint8Array(decryptedText.length);
+//   for (let i = 0; i < decryptedText.length; i++) {
+//     decryptedBuffer[i] = decryptedText.charCodeAt(i);
+//   }
+
+//   console.log("Decrypted Data:", decryptedBuffer);
+// } else {
+//   console.log("Decryption failed.");
+// }
+
+// Now, decryptedBuffer contains the decrypted data in the same format as the input this.state.buffer
+
 
     // Calculate the time difference in milliseconds
-    const elapsedTime3 = endTime3 - startTime3;
+    // const elapsedTime3 = endTime3 - startTime3;
 
-    console.log("Time taken encryption (milliseconds):", elapsedTime3);
+    // console.log("Time taken encryption (milliseconds):", elapsedTime3);
 
 
     // console.log('submit form.')

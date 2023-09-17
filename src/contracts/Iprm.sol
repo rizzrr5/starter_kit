@@ -9,6 +9,7 @@ contract Iprm{
         address moduleLeaderAddress;
         uint256 timestamp;
         string courseId;
+
     }
 	 
 
@@ -19,7 +20,7 @@ contract Iprm{
 	   address[] private submittedUsers;
 
  function submit(string memory _ipfsHash, string memory _courseId, address _module_leader) public {
-        bytes32 hash = keccak256(bytes(_ipfsHash)); // Convert string to bytes32 hash
+        bytes32 hash = keccak256(bytes(_ipfsHash)); 
 
         submissions[hash] = Work({
             ipfsHash: _ipfsHash,
@@ -35,14 +36,13 @@ contract Iprm{
             submittedUsers.push(msg.sender);
         }
 
-        // Emit an event for the submission
         emit DocumentSubmitted(msg.sender, _ipfsHash, _courseId, block.timestamp);
     }
      function getUserSubmissions() public view returns (string[] memory) {
-        return userSubmissions[msg.sender]; // Retrieve all submission hashes for the calling user
+        return userSubmissions[msg.sender]; 
     }
 	function courseSubmissions(string memory courseId) public view returns (string[] memory) {
-        return courseSubmission[courseId]; // Retrieve all submission hashes for the calling user
+        return courseSubmission[courseId]; 
     }
      function userAlreadySubmitted(address user) private view returns (bool) {
         for (uint256 i = 0; i < submittedUsers.length; i++) {

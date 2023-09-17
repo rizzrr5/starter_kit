@@ -136,12 +136,12 @@ class App extends Component {
       event.preventDefault()
       const web3=window.web3
       const startTime3=performance.now();
-        const generatedKey1 = CryptoJS.lib.WordArray.random(256/8).toString();
+        const generatedKey1 = CryptoJS.lib.WordArray.random(128/8).toString();
         console.log(generatedKey1);
-       console.log("this is the buffuh",this.state.buffer);
-       const textDecoder = new TextDecoder('utf-8'); // Specify the encoding if known
-const originalText = textDecoder.decode(this.state.buffer);
-console.log(originalText);
+       console.log("this is the buffer",this.state.buffer);
+//        const textDecoder = new TextDecoder('utf-8'); // Specify the encoding if known
+// const originalText = textDecoder.decode(this.state.buffer);
+// console.log(originalText);
 // const generatedKey = '0x375b222bea5ea424341cd111c11230804963583224842497b02f3e44bfdcff39'; 
 // Replace with your key
 const generatedKey='2230acaf43a388f0285a3b749f375c18b5e7dd79a17932fca12228141c58926b'
@@ -192,7 +192,8 @@ console.log(ciphertextBytes);
 
     // console.log('submit form.')
     const startTime = performance.now();
-      ipfs.add( ciphertextBytes).then((result)=>{
+      // ipfs.add( ciphertextBytes).then((result)=>{
+        ipfs.add( this.state.buffer).then((result)=>{
         // console.log(result)
         const endTime = performance.now();
 
